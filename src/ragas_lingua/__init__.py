@@ -14,7 +14,7 @@ from .confidence import (
 from .dataset import EvalDataset, EvalSample
 from .diagnose import Diagnosis, Thresholds, diagnose, diagnose_all
 from .evaluate import EvaluationResult, evaluate
-from .judge import DEFAULT_JUDGE_MODEL, ClaudeJudge, FakeJudge, Judge
+from .judge import DEFAULT_JUDGE_MODEL, CachingJudge, ClaudeJudge, FakeJudge, Judge
 from .language import (
     GERMAN,
     SWEDISH,
@@ -40,6 +40,7 @@ __all__ = [
     "EvalSample",
     "ClaudeJudge",
     "FakeJudge",
+    "CachingJudge",
     "Judge",
     "DEFAULT_JUDGE_MODEL",
     "LanguageProfile",

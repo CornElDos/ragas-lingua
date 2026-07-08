@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from statistics import fmean, pstdev
 from typing import Any, Iterable, Sequence
 
+from ._concurrent import run_concurrent
 from .dataset import EvalDataset, EvalSample
 from .judge import Judge
 from .language import LanguageProfile, get_profile
@@ -94,12 +95,14 @@ def score_with_confidence(
     profile: LanguageProfile,
     runs: int = 5,
     bands: ConfidenceBands = DEFAULT_BANDS,
+    max_concurrency: int = 1,
 ) -> MetricConfidence:
     """Score one sample ``runs`` times and report the mean and its wobble.
 
     Returns a :class:`MetricConfidence`. Runs that come back as NaN (e.g. a
     metric with nothing to score) are dropped before aggregating; if every run
-    is NaN the result is NaN with ``unknown`` confidence.
+    is NaN the result is NaN with ``unknown`` confidence. ``max_concurrency``
+    overlaps the runs in a thread pool.
     """
     if runs < 1:
         raise ValueError("runs must be >= 1")
@@ -110,9 +113,11 @@ def score_with_confidence(
             "(e.g. ClaudeJudge(temperature=0.7)).",
             stacklevel=2,
         )
-    scores = [
-        metric.score(sample, judge=judge, profile=profile).score for _ in range(runs)
+    thunks = [
+        lambda: metric.score(sample, judge=judge, profile=profile).score
+        for _ in range(runs)
     ]
+    scores = run_concurrent(thunks, max_concurrency)
     return _aggregate(metric.name, scores, runs, bands)
 
 
@@ -124,30 +129,37 @@ def evaluate_with_confidence(
     language: str = "sv",
     runs: int = 5,
     bands: ConfidenceBands = DEFAULT_BANDS,
+    max_concurrency: int = 1,
 ) -> list[dict[str, MetricConfidence]]:
     """Run :func:`score_with_confidence` for every sample and every metric.
 
     Returns one dict per sample (metric name -> MetricConfidence), mirroring
     ``EvaluationResult.per_sample`` so the two line up row for row.
+    ``max_concurrency`` overlaps the (sample, metric) units; each unit's own
+    runs stay sequential so the pool never nests.
     """
     if not isinstance(dataset, EvalDataset):
         dataset = EvalDataset.from_dicts(dataset)
 
+    samples = list(dataset)
     default_profile = get_profile(language)
-    rows: list[dict[str, MetricConfidence]] = []
-    for sample in dataset:
-        profile = get_profile(sample.language) if sample.language else default_profile
-        rows.append(
-            {
-                metric.name: score_with_confidence(
-                    metric,
-                    sample,
-                    judge=judge,
-                    profile=profile,
-                    runs=runs,
-                    bands=bands,
+    profiles = [
+        get_profile(s.language) if s.language else default_profile for s in samples
+    ]
+
+    thunks = []
+    index: list[tuple[int, str]] = []
+    for i, sample in enumerate(samples):
+        for metric in metrics:
+            thunks.append(
+                lambda m=metric, s=sample, p=profiles[i]: score_with_confidence(
+                    m, s, judge=judge, profile=p, runs=runs, bands=bands, max_concurrency=1
                 )
-                for metric in metrics
-            }
-        )
+            )
+            index.append((i, metric.name))
+
+    results = run_concurrent(thunks, max_concurrency)
+    rows: list[dict[str, MetricConfidence]] = [{} for _ in samples]
+    for (i, name), result in zip(index, results):
+        rows[i][name] = result
     return rows

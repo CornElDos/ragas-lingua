@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Sequence
 
+from ._concurrent import run_concurrent
 from .dataset import EvalDataset
 from .judge import Judge
 from .language import get_profile
@@ -29,28 +30,42 @@ def evaluate(
     *,
     judge: Judge,
     language: str = "sv",
+    max_concurrency: int = 1,
 ) -> EvaluationResult:
     """Score every sample with every metric and return per-metric means.
 
     ``language`` sets the default LanguageProfile; a sample may override it via
-    its own ``language`` field.
+    its own ``language`` field. ``max_concurrency`` runs the (sample, metric)
+    judge calls in a thread pool — leave it at 1 for a plain sequential loop,
+    raise it to overlap the I/O-bound judge round-trips on large datasets.
     """
     if not isinstance(dataset, EvalDataset):
         dataset = EvalDataset.from_dicts(dataset)
 
+    samples = list(dataset)
     default_profile = get_profile(language)
-    per_sample: list[dict[str, MetricResult]] = []
-    totals: dict[str, float] = {m.name: 0.0 for m in metrics}
+    profiles = [
+        get_profile(s.language) if s.language else default_profile for s in samples
+    ]
 
-    for sample in dataset:
-        profile = get_profile(sample.language) if sample.language else default_profile
-        row: dict[str, MetricResult] = {}
+    # One thunk per (sample, metric); results come back in submission order.
+    thunks = []
+    index: list[tuple[int, str]] = []
+    for i, sample in enumerate(samples):
         for metric in metrics:
-            result = metric.score(sample, judge=judge, profile=profile)
-            row[metric.name] = result
-            totals[metric.name] += result.score
-        per_sample.append(row)
+            thunks.append(
+                lambda m=metric, s=sample, p=profiles[i]: m.score(s, judge=judge, profile=p)
+            )
+            index.append((i, metric.name))
 
-    n = max(len(dataset), 1)
+    results = run_concurrent(thunks, max_concurrency)
+
+    per_sample: list[dict[str, MetricResult]] = [{} for _ in samples]
+    totals: dict[str, float] = {m.name: 0.0 for m in metrics}
+    for (i, name), result in zip(index, results):
+        per_sample[i][name] = result
+        totals[name] += result.score
+
+    n = max(len(samples), 1)
     scores = {name: total / n for name, total in totals.items()}
     return EvaluationResult(scores=scores, per_sample=per_sample)

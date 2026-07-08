@@ -13,6 +13,7 @@ _OFFLINE = [
     "05_add_a_language.py",
     "06_offline_with_fakejudge.py",
     "07_confidence.py",
+    "08_cache_and_concurrency.py",
 ]
 
 

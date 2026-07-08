@@ -137,6 +137,28 @@ does this for a whole dataset, returning one row per sample to line up with
 `EvaluationResult.per_sample`. Runs that come back NaN are dropped; all-NaN reports
 `unknown`. At `temperature=0` every run is identical, so it warns.
 
+## Scale: concurrency and caching
+
+Judge calls are I/O-bound, so two knobs make real datasets practical:
+
+```python
+from ragas_lingua import CachingJudge, ClaudeJudge, evaluate, Faithfulness
+
+# cache deterministic calls to disk; run the judge calls N-at-a-time
+with CachingJudge(ClaudeJudge(), path=".ragas_cache.json") as judge:
+    result = evaluate(data, [Faithfulness()], judge=judge, language="sv", max_concurrency=8)
+```
+
+- **`max_concurrency`** (on `evaluate`, `score_with_confidence`, `evaluate_with_confidence`)
+  overlaps the per-(sample, metric) judge round-trips in a thread pool. Default `1` is the
+  plain sequential loop; results always come back in dataset order.
+- **`CachingJudge`** memoises `structured()` results keyed on the exact prompt, schema and
+  model, so re-running the same dataset costs nothing the second time. `path=` persists the
+  cache as JSON across processes (loaded on construction, written by `save()` or on `with`
+  exit). It's thread-safe, so it composes with `max_concurrency`. Caching is **disabled when
+  the judge samples above temperature 0** — confidence runs must vary, so a cache would
+  wrongly collapse the spread to zero.
+
 ## How it works
 
 - **`LanguageProfile`** — the core asset: per-language, human-authored judge material.
@@ -202,6 +224,7 @@ Runnable scripts in [`examples/`](examples/):
 | `05_add_a_language.py` | add a language with `register_prompts_dir()` | no |
 | `06_offline_with_fakejudge.py` | run the whole flow offline with `FakeJudge` | no |
 | `07_confidence.py` | `score_with_confidence()` — mean +/- spread over repeated runs | no |
+| `08_cache_and_concurrency.py` | `CachingJudge` + `evaluate(max_concurrency=…)` | no |
 
 ## Development
 

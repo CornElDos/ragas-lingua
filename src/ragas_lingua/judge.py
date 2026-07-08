@@ -8,7 +8,12 @@ is a deterministic stand-in for tests (no network, no API key).
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
+import threading
+import warnings
+from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
 # Override with the env var; see Anthropic's docs for the current Sonnet model id.
@@ -126,3 +131,101 @@ class FakeJudge:
         if self._responses:
             return self._responses.pop(0)
         raise AssertionError("FakeJudge ran out of scripted responses")
+
+
+class CachingJudge:
+    """Wrap a Judge and memoise its ``structured()`` results.
+
+    A judge call at temperature 0 is deterministic, so re-running the same
+    dataset need not re-pay the model: an identical (system, user, schema,
+    tool_name) request returns the cached object. Pass ``path`` to persist the
+    cache as JSON across processes — it is loaded on construction and written by
+    :meth:`save` or on exit from a ``with`` block.
+
+    Caching is disabled when the wrapped judge samples above temperature 0:
+    self-consistency confidence needs every run to vary, and a cache would
+    collapse the spread to zero. Those calls always pass straight through.
+
+    Thread-safe, so it composes with ``evaluate(..., max_concurrency=N)``.
+    """
+
+    def __init__(self, judge: Judge, *, path: str | os.PathLike[str] | None = None) -> None:
+        self._judge = judge
+        self._path = Path(path) if path is not None else None
+        self._cache: dict[str, dict[str, Any]] = {}
+        self._lock = threading.Lock()
+        self.hits = 0
+        self.misses = 0
+        # temperature 0 (or a judge with no temperature) is cacheable.
+        self._cacheable = getattr(judge, "temperature", 0.0) in (0, 0.0)
+        if not self._cacheable:
+            warnings.warn(
+                "CachingJudge wraps a judge sampling above temperature 0; caching is "
+                "disabled so confidence sampling stays valid — calls pass through.",
+                stacklevel=2,
+            )
+        if self._path is not None and self._path.exists():
+            with self._path.open(encoding="utf-8") as handle:
+                self._cache = json.load(handle)
+
+    @property
+    def temperature(self) -> float:
+        # Stay transparent to callers that inspect the judge (e.g. the
+        # confidence sampler's temperature-0 guard).
+        return float(getattr(self._judge, "temperature", 0.0))
+
+    def _key(self, system: str, user: str, schema: dict[str, Any], tool_name: str) -> str:
+        blob = json.dumps(
+            {
+                "system": system,
+                "user": user,
+                "schema": schema,
+                "tool_name": tool_name,
+                "model": getattr(self._judge, "model", None),
+            },
+            sort_keys=True,
+            ensure_ascii=False,
+        )
+        return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+    def structured(
+        self, *, system: str, user: str, schema: dict[str, Any], tool_name: str = "record"
+    ) -> dict[str, Any]:
+        if not self._cacheable:
+            return self._judge.structured(
+                system=system, user=user, schema=schema, tool_name=tool_name
+            )
+        key = self._key(system, user, schema, tool_name)
+        with self._lock:
+            if key in self._cache:
+                self.hits += 1
+                return dict(self._cache[key])
+        result = self._judge.structured(
+            system=system, user=user, schema=schema, tool_name=tool_name
+        )
+        with self._lock:
+            self._cache[key] = dict(result)
+            self.misses += 1
+        return dict(result)
+
+    def save(self) -> None:
+        """Write the cache to ``path`` atomically. Raises if no path was set."""
+        if self._path is None:
+            raise ValueError("CachingJudge has no path to save to")
+        with self._lock:
+            snapshot = dict(self._cache)
+        tmp = self._path.with_name(self._path.name + ".tmp")
+        with tmp.open("w", encoding="utf-8") as handle:
+            json.dump(snapshot, handle, ensure_ascii=False)
+        tmp.replace(self._path)
+
+    def stats(self) -> dict[str, int]:
+        return {"hits": self.hits, "misses": self.misses, "size": len(self._cache)}
+
+    def __enter__(self) -> CachingJudge:
+        return self
+
+    def __exit__(self, *exc: object) -> bool:
+        if self._path is not None:
+            self.save()
+        return False
