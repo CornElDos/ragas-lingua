@@ -15,7 +15,7 @@ from .language import (
     available_languages,
     get_profile,
 )
-from .metrics import Faithfulness, Metric, MetricResult
+from .metrics import AnswerCorrectness, Faithfulness, Metric, MetricResult
 
 __version__ = "0.1.0"
 
@@ -34,6 +34,7 @@ __all__ = [
     "Metric",
     "MetricResult",
     "Faithfulness",
+    "AnswerCorrectness",
     "evaluate",
     "EvaluationResult",
 ]
