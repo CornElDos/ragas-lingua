@@ -111,12 +111,39 @@ for d in diagnose_all(result):
 Plus flags (`noisy_retrieval`, `off_topic`) and the exact ungrounded statements as evidence.
 Thresholds are configurable via `Thresholds(high=..., low=...)`.
 
+## Confidence
+
+An LLM judge is noisy — sample it twice and the score moves. Most eval tools
+report a single number as if it were exact. `score_with_confidence` runs a metric
+several times and reports the mean *and* how much it wobbled, so you know how far
+to trust it:
+
+```python
+from ragas_lingua import ClaudeJudge, Faithfulness, score_with_confidence, get_profile
+
+# sample above temperature 0 so the runs actually vary
+mc = score_with_confidence(
+    Faithfulness(), sample,
+    judge=ClaudeJudge(temperature=0.7), profile=get_profile("sv"), runs=5,
+)
+print(mc.summary())
+# faithfulness: 0.61 +/- 0.09 (medium confidence, n=5)
+```
+
+The spread maps to a `high` / `medium` / `low` label (cutoffs configurable via
+`ConfidenceBands`). Low confidence means the judge disagreed with itself — the
+number is soft, not a verdict. `evaluate_with_confidence(dataset, metrics, ...)`
+does this for a whole dataset, returning one row per sample to line up with
+`EvaluationResult.per_sample`. Runs that come back NaN are dropped; all-NaN reports
+`unknown`. At `temperature=0` every run is identical, so it warns.
+
 ## How it works
 
 - **`LanguageProfile`** — the core asset: per-language, human-authored judge material.
 - **`ClaudeJudge`** — the Claude Messages API with tool-based structured output,
-  `temperature=0`. The judge is pluggable via a tiny `Judge` protocol, so you can swap in
-  another model — including a **local** one, if your data can't leave your machine.
+  `temperature=0` by default (raise it for confidence sampling). The judge is pluggable
+  via a tiny `Judge` protocol, so you can swap in another model — including a **local**
+  one, if your data can't leave your machine.
 - **`metrics/`** — language-consistent reimplementations of the four core RAGAS metrics.
 
 **Long answers?** `ClaudeJudge(max_tokens=...)` (default `8192`, or the
@@ -174,6 +201,7 @@ Runnable scripts in [`examples/`](examples/):
 | `04_from_ragas.py` | migrate a RAGAS dataset via the field aliases | no |
 | `05_add_a_language.py` | add a language with `register_prompts_dir()` | no |
 | `06_offline_with_fakejudge.py` | run the whole flow offline with `FakeJudge` | no |
+| `07_confidence.py` | `score_with_confidence()` — mean +/- spread over repeated runs | no |
 
 ## Development
 

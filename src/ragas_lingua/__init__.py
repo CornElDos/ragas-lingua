@@ -5,6 +5,12 @@ with human-authored, language-native judge prompts and Claude as the LLM-judge.
 Swedish and German first, any language next.
 """
 
+from .confidence import (
+    ConfidenceBands,
+    MetricConfidence,
+    evaluate_with_confidence,
+    score_with_confidence,
+)
 from .dataset import EvalDataset, EvalSample
 from .diagnose import Diagnosis, Thresholds, diagnose, diagnose_all
 from .evaluate import EvaluationResult, evaluate
@@ -55,4 +61,8 @@ __all__ = [
     "diagnose_all",
     "Diagnosis",
     "Thresholds",
+    "score_with_confidence",
+    "evaluate_with_confidence",
+    "MetricConfidence",
+    "ConfidenceBands",
 ]

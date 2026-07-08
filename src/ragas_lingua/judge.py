@@ -49,9 +49,13 @@ class ClaudeJudge:
         *,
         api_key: str | None = None,
         max_tokens: int = DEFAULT_MAX_TOKENS,
+        temperature: float = 0.0,
     ) -> None:
         self.model = model
         self.max_tokens = max_tokens
+        # 0.0 is right for single, deterministic scoring; raise it (e.g. 0.7)
+        # to sample the judge for confidence via score_with_confidence().
+        self.temperature = temperature
         self._api_key = api_key
         self._client: Any = None
 
@@ -82,7 +86,7 @@ class ClaudeJudge:
         message = client.messages.create(
             model=self.model,
             max_tokens=self.max_tokens,
-            temperature=0,
+            temperature=self.temperature,
             system=system,
             tools=[tool],
             tool_choice={"type": "tool", "name": tool_name},

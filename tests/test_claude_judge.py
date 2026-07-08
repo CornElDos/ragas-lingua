@@ -26,8 +26,10 @@ class _Message:
 class _Messages:
     def __init__(self, message):
         self._message = message
+        self.last_kwargs = None
 
     def create(self, **kwargs):
+        self.last_kwargs = kwargs
         return self._message
 
 
@@ -58,3 +60,17 @@ def test_raises_when_no_tool_use_block():
     judge = _judge_returning(_Message("end_turn", [_Block("text", None, None)]))
     with pytest.raises(RuntimeError, match="no tool_use block"):
         judge.structured(system="s", user="u", schema={"type": "object"})
+
+
+def test_temperature_defaults_to_zero_and_is_forwarded():
+    judge = _judge_returning(_Message("tool_use", [_Block("tool_use", "record", {"ok": 1})]))
+    assert judge.temperature == 0.0
+    judge.structured(system="s", user="u", schema={"type": "object"})
+    assert judge._client.messages.last_kwargs["temperature"] == 0.0
+
+
+def test_temperature_override_is_forwarded():
+    judge = ClaudeJudge(temperature=0.7)
+    judge._client = _Client(_Message("tool_use", [_Block("tool_use", "record", {"ok": 1})]))
+    judge.structured(system="s", user="u", schema={"type": "object"})
+    assert judge._client.messages.last_kwargs["temperature"] == 0.7

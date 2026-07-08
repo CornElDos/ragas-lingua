@@ -8,7 +8,12 @@ from pathlib import Path
 import pytest
 
 _EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
-_OFFLINE = ["04_from_ragas.py", "05_add_a_language.py", "06_offline_with_fakejudge.py"]
+_OFFLINE = [
+    "04_from_ragas.py",
+    "05_add_a_language.py",
+    "06_offline_with_fakejudge.py",
+    "07_confidence.py",
+]
 
 
 def test_all_examples_compile():
