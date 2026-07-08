@@ -101,9 +101,11 @@ for d in diagnose_all(result):
 | Label | When | Meaning |
 | --- | --- | --- |
 | `well_grounded` | faithfulness high | grounded in the context |
-| `retrieval_gap` | faithfulness low + answer_correctness high | correct but ungrounded — the support wasn't retrieved |
-| `hallucination` | faithfulness low + answer_correctness low | ungrounded *and* wrong |
-| `partial` | faithfulness low + mixed correctness | some claims ungrounded |
+| `retrieval_gap` | faithfulness low, answer_correctness high | correct but ungrounded (the support was not retrieved) |
+| `hallucination` | faithfulness low, answer_correctness low | ungrounded *and* wrong |
+| `partial_retrieval` | mixed correctness, ungrounded, low context_precision | the bottleneck is retrieval |
+| `partial_generation` | mixed correctness, ungrounded, high context_precision | good context, but the answer does not ground in it |
+| `partial` | mixed correctness, context_precision unknown | can't attribute yet |
 | `ungrounded_unverified` | faithfulness low, no ground_truth | add a reference to disambiguate |
 
 Plus flags (`noisy_retrieval`, `off_topic`) and the exact ungrounded statements as evidence.

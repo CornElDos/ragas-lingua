@@ -45,6 +45,15 @@ _EXPLANATIONS = {
         "correct against the reference."
     ),
     "partial": "Some of the answer's claims are ungrounded and its correctness is mixed.",
+    "partial_retrieval": (
+        "Some claims are ungrounded and correctness is mixed, and the retrieved "
+        "context is weak, so retrieval is the bottleneck."
+    ),
+    "partial_generation": (
+        "Some claims are ungrounded and correctness is mixed even though the "
+        "retrieved context is relevant, so the bottleneck is how the answer uses "
+        "the context, not retrieval."
+    ),
     "ungrounded_unverified": (
         "The answer's claims are not supported by the retrieved context; add a "
         "ground_truth (answer_correctness) to tell a retrieval gap apart from a "
@@ -117,6 +126,14 @@ def diagnose(
         label = "retrieval_gap"
     elif correct < thresholds.low:
         label = "hallucination"
+    elif precision is not None and precision < thresholds.low:
+        # Mixed correctness, ungrounded, and the retrieved context is weak:
+        # retrieval is the bottleneck.
+        label = "partial_retrieval"
+    elif precision is not None and precision >= thresholds.high:
+        # Mixed correctness, ungrounded, but the context is relevant: the model
+        # is not grounding in the good context it was given.
+        label = "partial_generation"
     else:
         label = "partial"
 

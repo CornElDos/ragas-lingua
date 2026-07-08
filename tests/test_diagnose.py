@@ -41,7 +41,7 @@ def test_hallucination_low_faithfulness_low_correctness():
     assert d.label == "hallucination"
 
 
-def test_partial_when_correctness_is_mixed():
+def test_partial_when_correctness_is_mixed_and_no_context_precision():
     d = diagnose(
         {
             "faithfulness": _r("faithfulness", 0.6),
@@ -49,6 +49,28 @@ def test_partial_when_correctness_is_mixed():
         }
     )
     assert d.label == "partial"
+
+
+def test_partial_retrieval_when_context_precision_is_low():
+    d = diagnose(
+        {
+            "faithfulness": _r("faithfulness", 0.6),
+            "answer_correctness": _r("answer_correctness", 0.65),
+            "context_precision": _r("context_precision", 0.3),
+        }
+    )
+    assert d.label == "partial_retrieval"
+
+
+def test_partial_generation_when_context_precision_is_high():
+    d = diagnose(
+        {
+            "faithfulness": _r("faithfulness", 0.6),
+            "answer_correctness": _r("answer_correctness", 0.65),
+            "context_precision": _r("context_precision", 0.95),
+        }
+    )
+    assert d.label == "partial_generation"
 
 
 def test_ungrounded_unverified_without_a_reference():
