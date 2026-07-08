@@ -88,6 +88,17 @@ class ClaudeJudge:
             tool_choice={"type": "tool", "name": tool_name},
             messages=[{"role": "user", "content": user}],
         )
+        # Critical for an eval tool: if the response was cut off at max_tokens,
+        # the tool_use block's `input` is empty/partial. Returning it silently
+        # would report a plausible-looking but wrong score (e.g. 0/N), which
+        # reads as "the RAG hallucinated everything" when the judge was merely
+        # truncated. Fail loudly instead.
+        if getattr(message, "stop_reason", None) == "max_tokens":
+            raise RuntimeError(
+                f"Judge response was truncated at max_tokens={self.max_tokens}; the "
+                f"structured result is incomplete. Raise it via "
+                f"ClaudeJudge(max_tokens=...) or the RAGAS_LINGUA_JUDGE_MAX_TOKENS env var."
+            )
         for block in message.content:
             if getattr(block, "type", None) == "tool_use" and block.name == tool_name:
                 return dict(block.input)
