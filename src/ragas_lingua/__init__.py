@@ -15,6 +15,8 @@ from .language import (
     LanguageProfile,
     available_languages,
     get_profile,
+    register_prompts_dir,
+    reviewed_languages,
 )
 from .metrics import (
     AnswerCorrectness,
@@ -37,6 +39,8 @@ __all__ = [
     "LanguageProfile",
     "get_profile",
     "available_languages",
+    "reviewed_languages",
+    "register_prompts_dir",
     "SWEDISH",
     "GERMAN",
     "Metric",

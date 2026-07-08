@@ -61,5 +61,5 @@ def test_no_statements_yields_nan():
 def test_unauthored_language_raises_notimplemented():
     # German faithfulness prompts are not authored yet; must fail loudly, not guess.
     judge = FakeJudge(responses=[{"statements": ["x"]}])
-    with pytest.raises(NotImplementedError):
-        Faithfulness().score(_sample(), judge=judge, profile=get_profile("de"))
+    with pytest.raises(ValueError):
+        Faithfulness().score(_sample(), judge=judge, profile=get_profile("zz"))

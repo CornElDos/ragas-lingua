@@ -1,0 +1,35 @@
+# German (de) — AUTO-GENERATED; needs native review (reviewed = false).
+code = "de"
+name = "Deutsch"
+english_name = "German"
+reviewed = false
+
+keep_language = "Alles, was du extrahierst, und deine gesamte Ausgabe müssen auf Deutsch sein, in derselben Sprache wie die Antwort. Übersetze niemals ins Englische."
+
+[faithfulness]
+extract_instruction = "Du bist ein sorgfältiger Faktenprüfer. Zerlege die ANTWORT in eigenständige, einfache Aussagen. Jede Aussage soll genau eine überprüfbare Tatsache ausdrücken, für sich allein verständlich sein und in derselben Sprache wie die Antwort wiedergegeben werden. Füge keine eigenen Schlussfolgerungen oder Deutungen hinzu."
+verdict_instruction = "Entscheide für jede Aussage, ob sie sich direkt aus dem KONTEXT ableiten lässt. Setze \"supported\" nur dann auf wahr, wenn die Aussage direkt vom Kontext gestützt wird, sonst falsch. Rate nicht aus Allgemeinwissen – nutze ausschließlich den Kontext."
+question_label = "FRAGE"
+answer_label = "ANTWORT"
+context_label = "KONTEXT"
+statements_label = "AUSSAGEN"
+
+[answer_correctness]
+classify_instruction = "Du vergleichst die ANTWORT mit der MUSTERLÖSUNG (der korrekten Antwort). Teile die vorkommenden Tatsachenaussagen in drei Gruppen ein:\n- TP: Aussagen in der Antwort, die durch die Musterlösung gestützt werden.\n- FP: Aussagen in der Antwort, die in der Musterlösung fehlen oder ihr widersprechen.\n- FN: Aussagen in der Musterlösung, die in der Antwort fehlen.\nGib jede Aussage kurz und in derselben Sprache wie der Text wieder."
+similarity_instruction = "Beurteile, wie gut die ANTWORT inhaltlich und sinngemäß mit der MUSTERLÖSUNG übereinstimmt. Setze \"similarity\" auf eine Zahl zwischen 0 und 1, wobei 1 bedeutet, dass sie sachlich dasselbe aussagen, und 0, dass sie völlig verschieden sind."
+answer_label = "ANTWORT"
+reference_label = "MUSTERLÖSUNG"
+
+[context_precision]
+verdict_instruction = "Du entscheidest, welche KONTEXTE nützlich sind, um die FRAGE zu beantworten, gegeben die MUSTERLÖSUNG. Gib ein Urteil pro Kontext in der angegebenen Reihenfolge: setze \"relevant\" auf wahr, wenn der Kontext dazu beiträgt, die Musterlösung zu erreichen, sonst falsch. Beurteile nach dem Inhalt, nicht nach der Reihenfolge."
+question_label = "FRAGE"
+reference_label = "MUSTERLÖSUNG"
+contexts_label = "KONTEXTE"
+
+[answer_relevancy]
+generate_instruction = "Formuliere anhand der ANTWORT (und gegebenenfalls des KONTEXTS) die Fragen, die die Antwort am besten beantwortet. Gib drei knappe Fragen in derselben Sprache wie die Antwort an. Setze außerdem \"noncommittal\" auf wahr, wenn die Antwort ausweichend oder nichtssagend ist (zum Beispiel \"ich weiß nicht\"), sonst falsch."
+similarity_instruction = "Beurteile, wie gut jede GENERIERTE FRAGE der URSPRUNGSFRAGE inhaltlich entspricht. Gib pro Frage eine Zahl zwischen 0 und 1 an, in derselben Reihenfolge (1 = dieselbe Frage, 0 = ohne Bezug)."
+answer_label = "ANTWORT"
+context_label = "KONTEXT"
+question_label = "URSPRUNGSFRAGE"
+generated_label = "GENERIERTE FRAGEN"

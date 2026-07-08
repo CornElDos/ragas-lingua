@@ -1,11 +1,9 @@
 """Answer relevancy — does the answer actually address the question?
 
-Like RAGAS answer relevancy, this generates the questions the answer would best
-answer and measures how close they are to the real question; a noncommittal
-answer scores 0. RAGAS compares with embeddings, which is where its generated
-questions come out in the wrong language for non-English input. Here the
-questions are generated with a native prompt and the closeness is judged by the
-LLM itself, so there is no embedding model and no language drift.
+Generates the questions the answer would best answer (natively, so they stay in
+the source language) and judges their closeness to the real question; a
+noncommittal answer scores 0. No embeddings. Prompts are loaded from the
+language pack.
 """
 
 from __future__ import annotations
@@ -16,7 +14,7 @@ from typing import Any
 from ..dataset import EvalSample
 from ..judge import Judge
 from ..language import LanguageProfile
-from .base import MetricResult
+from .base import MetricResult, get_metric_prompts
 
 
 @dataclass(frozen=True)
@@ -28,28 +26,6 @@ class _Prompts:
     question_label: str
     generated_label: str
 
-
-# Swedish (sv) — native-authored and native-verifiable.
-_SV = _Prompts(
-    generate_instruction=(
-        "Utifrån SVARET (och eventuell KONTEXT), formulera de frågor som "
-        "svaret bäst besvarar. Ge tre kortfattade frågor på samma språk som "
-        'svaret. Sätt dessutom "noncommittal" till sant om svaret är '
-        'undvikande eller icke-informativt (till exempel "jag vet inte"), '
-        "annars falskt."
-    ),
-    similarity_instruction=(
-        "Bedöm hur väl varje GENERERAD FRÅGA motsvarar URSPRUNGSFRÅGAN i "
-        "betydelse. Ge ett tal mellan 0 och 1 per fråga, i samma ordning "
-        "(1 = samma fråga, 0 = orelaterad)."
-    ),
-    answer_label="SVAR",
-    context_label="KONTEXT",
-    question_label="URSPRUNGSFRÅGA",
-    generated_label="GENERERADE FRÅGOR",
-)
-
-_PROMPTS: dict[str, _Prompts] = {"sv": _SV}
 
 _GENERATE_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -72,21 +48,14 @@ class AnswerRelevancy:
     name: str = field(default="answer_relevancy")
 
     def _prompts(self, profile: LanguageProfile) -> _Prompts:
-        try:
-            return _PROMPTS[profile.code]
-        except KeyError:
-            raise NotImplementedError(
-                f"AnswerRelevancy prompts are not yet authored for language "
-                f"{profile.code!r}. Swedish (sv) is implemented; other languages "
-                f"need native-authored, natively-reviewed prompts."
-            ) from None
+        return _Prompts(**get_metric_prompts(profile, self.name))
 
     def score(
         self, sample: EvalSample, *, judge: Judge, profile: LanguageProfile
     ) -> MetricResult:
         p = self._prompts(profile)
 
-        context_block = "\n\n".join(f"- {c}" for c in sample.contexts) or "(ingen kontext)"
+        context_block = "\n\n".join(f"- {c}" for c in sample.contexts) or "(–)"
         generated = judge.structured(
             system=f"{p.generate_instruction}\n\n{profile.keep_language}",
             user=f"{p.answer_label}:\n{sample.answer}\n\n{p.context_label}:\n{context_block}",

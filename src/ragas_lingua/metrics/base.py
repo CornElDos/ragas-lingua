@@ -1,19 +1,42 @@
-"""Metric protocol and result type.
-
-Concrete metrics (faithfulness, answer_correctness, context_precision,
-answer_relevancy) land in M1. Each will follow the same shape: build a
-language-native prompt from the profile, ask the judge for structured output,
-then apply RAGAS-equivalent scoring math.
-"""
+"""Metric protocol, result type, and the per-language prompt loader hook."""
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
 from ..dataset import EvalSample
 from ..judge import Judge
 from ..language import LanguageProfile
+from ..promptpacks import load_pack
+
+_UNREVIEWED_WARNED: set[str] = set()
+
+
+def get_metric_prompts(profile: LanguageProfile, metric_name: str) -> dict[str, str]:
+    """Return a language's prompt section for a metric (field name -> string).
+
+    Raises ``NotImplementedError`` if the language pack has no section for this
+    metric, and warns once per process if the language is not native-reviewed.
+    """
+    pack = load_pack(profile.code)
+    try:
+        section = pack[metric_name]
+    except KeyError:
+        raise NotImplementedError(
+            f"Language {profile.code!r} ({profile.english_name}) has no "
+            f"'{metric_name}' prompt section."
+        ) from None
+    if not profile.reviewed and profile.code not in _UNREVIEWED_WARNED:
+        _UNREVIEWED_WARNED.add(profile.code)
+        warnings.warn(
+            f"ragas-lingua: prompts for {profile.english_name} ({profile.code!r}) are "
+            f"AUTO-GENERATED and not yet verified by a native speaker — treat scores as "
+            f"provisional until reviewed.",
+            stacklevel=3,
+        )
+    return section
 
 
 @dataclass

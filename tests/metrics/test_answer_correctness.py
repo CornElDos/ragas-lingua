@@ -54,5 +54,5 @@ def test_classification_prompt_is_swedish_and_native():
 
 def test_unauthored_language_raises_notimplemented():
     judge = FakeJudge(responses=[{"TP": [], "FP": [], "FN": []}, {"similarity": 1.0}])
-    with pytest.raises(NotImplementedError):
-        AnswerCorrectness().score(_sample(), judge=judge, profile=get_profile("de"))
+    with pytest.raises(ValueError):
+        AnswerCorrectness().score(_sample(), judge=judge, profile=get_profile("zz"))

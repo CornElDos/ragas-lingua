@@ -56,5 +56,5 @@ def test_prompt_is_swedish_and_native():
 
 def test_unauthored_language_raises_notimplemented():
     judge = FakeJudge(responses=[{"verdicts": [{"relevant": True}]}])
-    with pytest.raises(NotImplementedError):
-        ContextPrecision().score(_sample(["a"]), judge=judge, profile=get_profile("de"))
+    with pytest.raises(ValueError):
+        ContextPrecision().score(_sample(["a"]), judge=judge, profile=get_profile("zz"))

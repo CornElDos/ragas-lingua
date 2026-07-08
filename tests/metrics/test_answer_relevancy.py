@@ -49,5 +49,5 @@ def test_generation_prompt_is_swedish_and_native():
 
 def test_unauthored_language_raises_notimplemented():
     judge = FakeJudge(responses=[{"questions": ["q"], "noncommittal": False}])
-    with pytest.raises(NotImplementedError):
-        AnswerRelevancy().score(_sample(), judge=judge, profile=get_profile("de"))
+    with pytest.raises(ValueError):
+        AnswerRelevancy().score(_sample(), judge=judge, profile=get_profile("zz"))

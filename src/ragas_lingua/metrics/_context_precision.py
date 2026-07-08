@@ -1,9 +1,8 @@
-"""Context precision — are the useful contexts ranked near the top?
+"""Context precision — average precision of the retrieved contexts by relevance.
 
 Same idea as RAGAS context precision: the judge marks each retrieved context as
-useful (or not) for answering the question given the reference, and the score is
-the average precision of that ranked list. The relevance prompt is authored
-natively per language so the verdicts don't degrade on non-English text.
+useful or not for answering the question given the reference; the score is the
+average precision of that ranked list. Prompts are loaded from the language pack.
 """
 
 from __future__ import annotations
@@ -14,7 +13,7 @@ from typing import Any
 from ..dataset import EvalSample
 from ..judge import Judge
 from ..language import LanguageProfile
-from .base import MetricResult
+from .base import MetricResult, get_metric_prompts
 
 
 @dataclass(frozen=True)
@@ -24,21 +23,6 @@ class _Prompts:
     reference_label: str
     contexts_label: str
 
-
-# Swedish (sv) — native-authored and native-verifiable.
-_SV = _Prompts(
-    verdict_instruction=(
-        "Du avgör vilka KONTEXTER som är användbara för att besvara FRÅGAN, "
-        "givet FACIT. Ge ett omdöme per kontext, i samma ordning som de "
-        'anges: sätt "relevant" till sant om kontexten bidrar till att nå '
-        "facit, annars falskt. Bedöm utifrån innehållet, inte ordningen."
-    ),
-    question_label="FRÅGA",
-    reference_label="FACIT",
-    contexts_label="KONTEXTER",
-)
-
-_PROMPTS: dict[str, _Prompts] = {"sv": _SV}
 
 _VERDICT_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -77,14 +61,7 @@ class ContextPrecision:
     name: str = field(default="context_precision")
 
     def _prompts(self, profile: LanguageProfile) -> _Prompts:
-        try:
-            return _PROMPTS[profile.code]
-        except KeyError:
-            raise NotImplementedError(
-                f"ContextPrecision prompts are not yet authored for language "
-                f"{profile.code!r}. Swedish (sv) is implemented; other languages "
-                f"need native-authored, natively-reviewed prompts."
-            ) from None
+        return _Prompts(**get_metric_prompts(profile, self.name))
 
     def score(
         self, sample: EvalSample, *, judge: Judge, profile: LanguageProfile
@@ -110,9 +87,8 @@ class ContextPrecision:
         )
         verdicts = judged.get("verdicts", [])
         relevance = [1 if v.get("relevant") else 0 for v in verdicts]
-        score = _average_precision(relevance)
         return MetricResult(
             name=self.name,
-            score=score,
+            score=_average_precision(relevance),
             details={"relevance": relevance, "verdicts": verdicts},
         )

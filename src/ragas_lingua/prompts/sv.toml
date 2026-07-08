@@ -1,0 +1,35 @@
+# Swedish (sv) — native-authored and verified.
+code = "sv"
+name = "Svenska"
+english_name = "Swedish"
+reviewed = true
+
+keep_language = "Allt du extraherar och allt du skriver ska vara på svenska, samma språk som svaret. Översätt aldrig till engelska."
+
+[faithfulness]
+extract_instruction = "Du är en noggrann faktagranskare. Dela upp SVARET i fristående, enkla påståenden. Varje påstående ska uttrycka exakt en verifierbar faktauppgift, vara begripligt på egen hand och återges på samma språk som svaret. Lägg inte till egna slutsatser eller tolkningar."
+verdict_instruction = "Avgör för varje påstående om det går att härleda direkt ur KONTEXTEN. Sätt \"supported\" till sant endast om påståendet stöds direkt av kontexten, annars falskt. Gissa inte utifrån allmän kunskap – använd enbart kontexten."
+question_label = "FRÅGA"
+answer_label = "SVAR"
+context_label = "KONTEXT"
+statements_label = "PÅSTÅENDEN"
+
+[answer_correctness]
+classify_instruction = "Du jämför SVARET mot FACIT (det korrekta svaret). Dela in de faktapåståenden som förekommer i tre grupper:\n- TP: påståenden i svaret som stöds av facit.\n- FP: påståenden i svaret som saknas i eller motsägs av facit.\n- FN: påståenden i facit som saknas i svaret.\nÅterge varje påstående kort och på samma språk som texten."
+similarity_instruction = "Bedöm hur väl SVARET stämmer överens med FACIT i sakinnehåll och betydelse. Sätt \"similarity\" till ett tal mellan 0 och 1, där 1 betyder att de i sak säger samma sak och 0 att de är helt olika."
+answer_label = "SVAR"
+reference_label = "FACIT"
+
+[context_precision]
+verdict_instruction = "Du avgör vilka KONTEXTER som är användbara för att besvara FRÅGAN, givet FACIT. Ge ett omdöme per kontext, i samma ordning som de anges: sätt \"relevant\" till sant om kontexten bidrar till att nå facit, annars falskt. Bedöm utifrån innehållet, inte ordningen."
+question_label = "FRÅGA"
+reference_label = "FACIT"
+contexts_label = "KONTEXTER"
+
+[answer_relevancy]
+generate_instruction = "Utifrån SVARET (och eventuell KONTEXT), formulera de frågor som svaret bäst besvarar. Ge tre kortfattade frågor på samma språk som svaret. Sätt dessutom \"noncommittal\" till sant om svaret är undvikande eller icke-informativt (till exempel \"jag vet inte\"), annars falskt."
+similarity_instruction = "Bedöm hur väl varje GENERERAD FRÅGA motsvarar URSPRUNGSFRÅGAN i betydelse. Ge ett tal mellan 0 och 1 per fråga, i samma ordning (1 = samma fråga, 0 = orelaterad)."
+answer_label = "SVAR"
+context_label = "KONTEXT"
+question_label = "URSPRUNGSFRÅGA"
+generated_label = "GENERERADE FRÅGOR"
