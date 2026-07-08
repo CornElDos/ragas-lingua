@@ -90,6 +90,12 @@ raises `NotImplementedError` rather than silently guessing.
   another model — including a **local** one, if your data can't leave your machine.
 - **`metrics/`** — language-consistent reimplementations of the four core RAGAS metrics.
 
+**Long answers?** `ClaudeJudge(max_tokens=...)` (default `8192`, or the
+`RAGAS_LINGUA_JUDGE_MAX_TOKENS` env var) caps the judge's structured output — the
+statement/verdict lists it produces, not your RAG input. If your RAG returns very long
+answers or many contexts and results look truncated, raise it. It's a ceiling, not a
+cost — you pay for tokens generated, not the limit — so a higher cap only helps.
+
 ## Languages
 
 | Language | Code | Status |

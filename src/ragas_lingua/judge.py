@@ -14,6 +14,12 @@ from typing import Any, Protocol, runtime_checkable
 # Override with the env var; see Anthropic's docs for the current Sonnet model id.
 DEFAULT_JUDGE_MODEL = os.environ.get("RAGAS_LINGUA_JUDGE_MODEL", "claude-sonnet-4-5")
 
+# Cap on the judge's structured OUTPUT (statement/verdict lists), not your RAG
+# input. It's a ceiling, not a target — you're billed for tokens generated, not
+# this limit — so a generous default just avoids truncation on long answers.
+# Raise it (or set the env var) if you evaluate very long answers / many contexts.
+DEFAULT_MAX_TOKENS = int(os.environ.get("RAGAS_LINGUA_JUDGE_MAX_TOKENS", "8192"))
+
 
 @runtime_checkable
 class Judge(Protocol):
@@ -42,7 +48,7 @@ class ClaudeJudge:
         model: str = DEFAULT_JUDGE_MODEL,
         *,
         api_key: str | None = None,
-        max_tokens: int = 2048,
+        max_tokens: int = DEFAULT_MAX_TOKENS,
     ) -> None:
         self.model = model
         self.max_tokens = max_tokens
