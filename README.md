@@ -1,5 +1,7 @@
 # ragas-lingua
 
+[![CI](https://github.com/CornElDos/ragas-lingua/actions/workflows/ci.yml/badge.svg)](https://github.com/CornElDos/ragas-lingua/actions/workflows/ci.yml)
+
 **Multilingual RAG evaluation with human-authored, language-native judge prompts — Swedish first, any language next.**
 
 A [RAGAS](https://github.com/vibrantlabsai/ragas)-compatible evaluator that replaces
