@@ -160,12 +160,25 @@ python bench/compare_ragas.py
 
 Both need `ANTHROPIC_API_KEY`. See [`ROADMAP.md`](ROADMAP.md) for what's next.
 
+## Examples
+
+Runnable scripts in [`examples/`](examples/):
+
+| File | Shows | Needs API key |
+| --- | --- | --- |
+| `01_quickstart.py` | evaluate a dataset with all four metrics | yes |
+| `02_diagnose.py` | metrics + `diagnose_all()` failure labels | yes |
+| `03_bring_your_own_rag.py` | wire your RAG pipeline into `EvalDataset` | yes |
+| `04_from_ragas.py` | migrate a RAGAS dataset via the field aliases | no |
+| `05_add_a_language.py` | add a language with `register_prompts_dir()` | no |
+| `06_offline_with_fakejudge.py` | run the whole flow offline with `FakeJudge` | no |
+
 ## Development
 
 ```bash
 uv pip install -e ".[dev]"
 pytest -q
-ruff check src tests bench
+ruff check src tests bench examples
 ```
 
 ## License
