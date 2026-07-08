@@ -82,6 +82,33 @@ Each metric extracts/judges in the answer's own language and keeps RAGAS's scori
 only the prompts change. A metric run against a language whose prompts aren't authored yet
 raises `NotImplementedError` rather than silently guessing.
 
+## Diagnosis
+
+A single low number can't tell you whether the tool or your RAG is at fault. `diagnose()`
+labels each sample from the *combination* of metrics — it classifies, it doesn't advise:
+
+```python
+from ragas_lingua import evaluate, diagnose_all, ClaudeJudge, Faithfulness, AnswerCorrectness, ContextPrecision
+
+result = evaluate(data, [Faithfulness(), AnswerCorrectness(), ContextPrecision()],
+                  judge=ClaudeJudge(), language="sv")
+for d in diagnose_all(result):
+    print(d.summary())
+# retrieval_gap [noisy_retrieval]  (faithfulness=0.28 answer_correctness=0.90 context_precision=0.40)
+#   The answer is largely correct, but its claims are not supported by the retrieved context …
+```
+
+| Label | When | Meaning |
+| --- | --- | --- |
+| `well_grounded` | faithfulness high | grounded in the context |
+| `retrieval_gap` | faithfulness low + answer_correctness high | correct but ungrounded — the support wasn't retrieved |
+| `hallucination` | faithfulness low + answer_correctness low | ungrounded *and* wrong |
+| `partial` | faithfulness low + mixed correctness | some claims ungrounded |
+| `ungrounded_unverified` | faithfulness low, no ground_truth | add a reference to disambiguate |
+
+Plus flags (`noisy_retrieval`, `off_topic`) and the exact ungrounded statements as evidence.
+Thresholds are configurable via `Thresholds(high=..., low=...)`.
+
 ## How it works
 
 - **`LanguageProfile`** — the core asset: per-language, human-authored judge material.

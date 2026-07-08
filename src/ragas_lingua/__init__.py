@@ -6,6 +6,7 @@ Swedish and German first, any language next.
 """
 
 from .dataset import EvalDataset, EvalSample
+from .diagnose import Diagnosis, Thresholds, diagnose, diagnose_all
 from .evaluate import EvaluationResult, evaluate
 from .judge import DEFAULT_JUDGE_MODEL, ClaudeJudge, FakeJudge, Judge
 from .language import (
@@ -46,4 +47,8 @@ __all__ = [
     "AnswerRelevancy",
     "evaluate",
     "EvaluationResult",
+    "diagnose",
+    "diagnose_all",
+    "Diagnosis",
+    "Thresholds",
 ]
