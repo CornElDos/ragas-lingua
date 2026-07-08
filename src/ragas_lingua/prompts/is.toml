@@ -1,0 +1,36 @@
+# Icelandic (is) — AUTO-GENERATED; needs CAREFUL native review (reviewed = false).
+# Icelandic morphology is complex; treat this pack as a draft until reviewed.
+code = "is"
+name = "Íslenska"
+english_name = "Icelandic"
+reviewed = false
+
+keep_language = "Allt sem þú dregur út og allt sem þú skrifar á að vera á íslensku, á sama tungumáli og svarið. Þýddu aldrei yfir á ensku."
+
+[faithfulness]
+extract_instruction = "Þú ert nákvæmur staðreyndarýnir. Skiptu SVARINU upp í sjálfstæðar, einfaldar staðhæfingar. Hver staðhæfing á að tjá nákvæmlega eina sannreynanlega staðreynd, vera skiljanleg ein og sér og vera á sama tungumáli og svarið. Bættu ekki við eigin ályktunum eða túlkunum."
+verdict_instruction = "Ákveddu fyrir hverja staðhæfingu hvort hana megi leiða beint af SAMHENGINU. Settu \"supported\" sem satt aðeins ef staðhæfingin er studd beint af samhenginu, annars ósatt. Giskaðu ekki út frá almennri þekkingu – notaðu eingöngu samhengið."
+question_label = "SPURNING"
+answer_label = "SVAR"
+context_label = "SAMHENGI"
+statements_label = "STAÐHÆFINGAR"
+
+[answer_correctness]
+classify_instruction = "Þú berð SVARIÐ saman við RÉTT SVAR. Skiptu þeim staðreyndastaðhæfingum sem koma fyrir í þrjá flokka:\n- TP: staðhæfingar í svarinu sem rétt svar styður.\n- FP: staðhæfingar í svarinu sem vantar í eða stangast á við rétt svar.\n- FN: staðhæfingar í réttu svari sem vantar í svarið.\nEndurtaktu hverja staðhæfingu stutt og á sama tungumáli og textinn."
+similarity_instruction = "Metaðu hversu vel SVARIÐ samræmist RÉTTU SVARI að efni og merkingu. Settu \"similarity\" sem tölu á milli 0 og 1, þar sem 1 þýðir að þau segja efnislega það sama og 0 að þau eru gjörólík."
+answer_label = "SVAR"
+reference_label = "RÉTT SVAR"
+
+[context_precision]
+verdict_instruction = "Þú ákveður hvaða SAMHENGI eru gagnleg til að svara SPURNINGUNNI, miðað við RÉTT SVAR. Gefðu mat fyrir hvert samhengi í sömu röð og þau eru gefin: settu \"relevant\" sem satt ef samhengið stuðlar að því að ná réttu svari, annars ósatt. Metaðu út frá innihaldinu, ekki röðinni."
+question_label = "SPURNING"
+reference_label = "RÉTT SVAR"
+contexts_label = "SAMHENGI"
+
+[answer_relevancy]
+generate_instruction = "Út frá SVARINU (og hugsanlegu SAMHENGI), settu fram spurningarnar sem svarið svarar best. Gefðu þrjár stuttar spurningar á sama tungumáli og svarið. Settu einnig \"noncommittal\" sem satt ef svarið er undanskotssamt eða óupplýsandi (til dæmis \"ég veit ekki\"), annars ósatt."
+similarity_instruction = "Metaðu hversu vel hver MYNDUÐ SPURNING samsvarar UPPRUNALEGU SPURNINGUNNI að merkingu. Gefðu tölu á milli 0 og 1 fyrir hverja spurningu, í sömu röð (1 = sama spurning, 0 = ótengt)."
+answer_label = "SVAR"
+context_label = "SAMHENGI"
+question_label = "UPPRUNALEG SPURNING"
+generated_label = "MYNDAÐAR SPURNINGAR"

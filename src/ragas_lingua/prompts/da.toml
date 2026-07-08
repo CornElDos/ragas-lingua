@@ -1,0 +1,35 @@
+# Danish (da) — AUTO-GENERATED; needs native review (reviewed = false).
+code = "da"
+name = "Dansk"
+english_name = "Danish"
+reviewed = false
+
+keep_language = "Alt hvad du uddrager, og alt hvad du skriver, skal være på dansk, samme sprog som svaret. Oversæt aldrig til engelsk."
+
+[faithfulness]
+extract_instruction = "Du er en omhyggelig faktatjekker. Opdel SVARET i selvstændige, enkle udsagn. Hvert udsagn skal udtrykke præcis én verificerbar faktaoplysning, være forståeligt alene og gengives på samme sprog som svaret. Tilføj ikke dine egne konklusioner eller fortolkninger."
+verdict_instruction = "Afgør for hvert udsagn, om det kan udledes direkte af KONTEKSTEN. Sæt \"supported\" til sand, kun hvis udsagnet støttes direkte af konteksten, ellers falsk. Gæt ikke ud fra almen viden – brug kun konteksten."
+question_label = "SPØRGSMÅL"
+answer_label = "SVAR"
+context_label = "KONTEKST"
+statements_label = "UDSAGN"
+
+[answer_correctness]
+classify_instruction = "Du sammenligner SVARET med FACIT (det korrekte svar). Inddel de faktuelle udsagn, der forekommer, i tre grupper:\n- TP: udsagn i svaret, som støttes af facit.\n- FP: udsagn i svaret, som mangler i eller modsiges af facit.\n- FN: udsagn i facit, som mangler i svaret.\nGengiv hvert udsagn kort og på samme sprog som teksten."
+similarity_instruction = "Vurder, hvor godt SVARET stemmer overens med FACIT i indhold og betydning. Sæt \"similarity\" til et tal mellem 0 og 1, hvor 1 betyder, at de indholdsmæssigt siger det samme, og 0, at de er helt forskellige."
+answer_label = "SVAR"
+reference_label = "FACIT"
+
+[context_precision]
+verdict_instruction = "Du afgør, hvilke KONTEKSTER der er nyttige til at besvare SPØRGSMÅLET, givet FACIT. Giv en vurdering pr. kontekst i den angivne rækkefølge: sæt \"relevant\" til sand, hvis konteksten bidrager til at nå facit, ellers falsk. Vurder ud fra indholdet, ikke rækkefølgen."
+question_label = "SPØRGSMÅL"
+reference_label = "FACIT"
+contexts_label = "KONTEKSTER"
+
+[answer_relevancy]
+generate_instruction = "Ud fra SVARET (og eventuel KONTEKST) skal du formulere de spørgsmål, som svaret bedst besvarer. Giv tre korte spørgsmål på samme sprog som svaret. Sæt desuden \"noncommittal\" til sand, hvis svaret er undvigende eller uinformativt (for eksempel \"det ved jeg ikke\"), ellers falsk."
+similarity_instruction = "Vurder, hvor godt hvert GENERERET SPØRGSMÅL svarer til det OPRINDELIGE SPØRGSMÅL i betydning. Giv et tal mellem 0 og 1 pr. spørgsmål, i samme rækkefølge (1 = samme spørgsmål, 0 = uden sammenhæng)."
+answer_label = "SVAR"
+context_label = "KONTEKST"
+question_label = "OPRINDELIGT SPØRGSMÅL"
+generated_label = "GENEREREDE SPØRGSMÅL"

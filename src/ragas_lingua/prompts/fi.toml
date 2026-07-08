@@ -1,0 +1,36 @@
+# Finnish (fi) — AUTO-GENERATED; needs CAREFUL native review (reviewed = false).
+# Finnish is agglutinative and grammatically distant; expect wording to change.
+code = "fi"
+name = "Suomi"
+english_name = "Finnish"
+reviewed = false
+
+keep_language = "Kaiken, mitä poimit ja kirjoitat, on oltava suomeksi, samalla kielellä kuin vastaus. Älä koskaan käännä englanniksi."
+
+[faithfulness]
+extract_instruction = "Olet huolellinen faktantarkistaja. Jaa VASTAUS itsenäisiin, yksinkertaisiin väitteisiin. Jokaisen väitteen tulee ilmaista täsmälleen yksi todennettavissa oleva tosiasia, olla ymmärrettävä yksinään ja esitettävä samalla kielellä kuin vastaus. Älä lisää omia päätelmiä tai tulkintoja."
+verdict_instruction = "Päätä jokaisen väitteen kohdalla, voidaanko se johtaa suoraan KONTEKSTISTA. Aseta \"supported\" todeksi vain, jos väite saa suoraa tukea kontekstista, muuten epätodeksi. Älä arvaa yleistiedon perusteella – käytä pelkästään kontekstia."
+question_label = "KYSYMYS"
+answer_label = "VASTAUS"
+context_label = "KONTEKSTI"
+statements_label = "VÄITTEET"
+
+[answer_correctness]
+classify_instruction = "Vertaat VASTAUSTA MALLIVASTAUKSEEN (oikeaan vastaukseen). Jaa esiintyvät tosiasiaväitteet kolmeen ryhmään:\n- TP: vastauksen väitteet, joita mallivastaus tukee.\n- FP: vastauksen väitteet, jotka puuttuvat mallivastauksesta tai ovat sen kanssa ristiriidassa.\n- FN: mallivastauksen väitteet, jotka puuttuvat vastauksesta.\nEsitä jokainen väite lyhyesti ja samalla kielellä kuin teksti."
+similarity_instruction = "Arvioi, kuinka hyvin VASTAUS vastaa MALLIVASTAUSTA asiasisällöltään ja merkitykseltään. Aseta \"similarity\" luvuksi välillä 0–1, jossa 1 tarkoittaa, että ne sanovat asiallisesti saman, ja 0, että ne ovat täysin erilaiset."
+answer_label = "VASTAUS"
+reference_label = "MALLIVASTAUS"
+
+[context_precision]
+verdict_instruction = "Päätät, mitkä KONTEKSTIT ovat hyödyllisiä KYSYMYKSEEN vastaamiseksi, kun MALLIVASTAUS on annettu. Anna arvio jokaisesta kontekstista samassa järjestyksessä kuin ne on annettu: aseta \"relevant\" todeksi, jos konteksti auttaa saavuttamaan mallivastauksen, muuten epätodeksi. Arvioi sisällön perusteella, älä järjestyksen."
+question_label = "KYSYMYS"
+reference_label = "MALLIVASTAUS"
+contexts_label = "KONTEKSTIT"
+
+[answer_relevancy]
+generate_instruction = "Muotoile VASTAUKSEN (ja mahdollisen KONTEKSTIN) perusteella kysymykset, joihin vastaus parhaiten vastaa. Anna kolme lyhyttä kysymystä samalla kielellä kuin vastaus. Aseta lisäksi \"noncommittal\" todeksi, jos vastaus on väistelevä tai epäinformatiivinen (esimerkiksi \"en tiedä\"), muuten epätodeksi."
+similarity_instruction = "Arvioi, kuinka hyvin kukin LUOTU KYSYMYS vastaa ALKUPERÄISTÄ KYSYMYSTÄ merkitykseltään. Anna luku välillä 0–1 jokaiselle kysymykselle samassa järjestyksessä (1 = sama kysymys, 0 = ei yhteyttä)."
+answer_label = "VASTAUS"
+context_label = "KONTEKSTI"
+question_label = "ALKUPERÄINEN KYSYMYS"
+generated_label = "LUODUT KYSYMYKSET"

@@ -1,0 +1,35 @@
+# Norwegian Bokmål (no) — AUTO-GENERATED; needs native review (reviewed = false).
+code = "no"
+name = "Norsk"
+english_name = "Norwegian"
+reviewed = false
+
+keep_language = "Alt du trekker ut og alt du skriver, skal være på norsk, samme språk som svaret. Oversett aldri til engelsk."
+
+[faithfulness]
+extract_instruction = "Du er en nøyaktig faktagransker. Del opp SVARET i frittstående, enkle påstander. Hver påstand skal uttrykke nøyaktig én verifiserbar faktaopplysning, være forståelig alene og gjengis på samme språk som svaret. Ikke legg til egne slutninger eller tolkninger."
+verdict_instruction = "Avgjør for hver påstand om den kan utledes direkte fra KONTEKSTEN. Sett \"supported\" til sann bare hvis påstanden støttes direkte av konteksten, ellers usann. Ikke gjett ut fra allmennkunnskap – bruk kun konteksten."
+question_label = "SPØRSMÅL"
+answer_label = "SVAR"
+context_label = "KONTEKST"
+statements_label = "PÅSTANDER"
+
+[answer_correctness]
+classify_instruction = "Du sammenligner SVARET med FASITEN (det riktige svaret). Del de faktapåstandene som forekommer inn i tre grupper:\n- TP: påstander i svaret som støttes av fasiten.\n- FP: påstander i svaret som mangler i eller motsies av fasiten.\n- FN: påstander i fasiten som mangler i svaret.\nGjengi hver påstand kort og på samme språk som teksten."
+similarity_instruction = "Vurder hvor godt SVARET stemmer overens med FASITEN i saksinnhold og betydning. Sett \"similarity\" til et tall mellom 0 og 1, der 1 betyr at de sier det samme saklig sett og 0 at de er helt forskjellige."
+answer_label = "SVAR"
+reference_label = "FASIT"
+
+[context_precision]
+verdict_instruction = "Du avgjør hvilke KONTEKSTER som er nyttige for å besvare SPØRSMÅLET, gitt FASITEN. Gi en vurdering per kontekst, i samme rekkefølge som de er oppgitt: sett \"relevant\" til sann hvis konteksten bidrar til å nå fasiten, ellers usann. Vurder ut fra innholdet, ikke rekkefølgen."
+question_label = "SPØRSMÅL"
+reference_label = "FASIT"
+contexts_label = "KONTEKSTER"
+
+[answer_relevancy]
+generate_instruction = "Ut fra SVARET (og eventuell KONTEKST), formuler spørsmålene som svaret best besvarer. Gi tre korte spørsmål på samme språk som svaret. Sett i tillegg \"noncommittal\" til sann hvis svaret er unnvikende eller lite informativt (for eksempel \"jeg vet ikke\"), ellers usann."
+similarity_instruction = "Vurder hvor godt hvert GENERERTE SPØRSMÅL tilsvarer det OPPRINNELIGE SPØRSMÅLET i betydning. Gi et tall mellom 0 og 1 per spørsmål, i samme rekkefølge (1 = samme spørsmål, 0 = uten sammenheng)."
+answer_label = "SVAR"
+context_label = "KONTEKST"
+question_label = "OPPRINNELIG SPØRSMÅL"
+generated_label = "GENERERTE SPØRSMÅL"
