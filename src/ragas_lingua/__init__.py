@@ -1,7 +1,8 @@
-"""ragas-lingua — language-aware RAG evaluation for Swedish, German and the Nordics.
+"""ragas-lingua — multilingual RAG evaluation with language-native judge prompts.
 
 A RAGAS-compatible evaluator that replaces RAGAS's fragile prompt auto-translation
 with human-authored, language-native judge prompts and Claude as the LLM-judge.
+Swedish and German first, any language next.
 """
 
 from .dataset import EvalDataset, EvalSample
@@ -14,7 +15,7 @@ from .language import (
     available_languages,
     get_profile,
 )
-from .metrics.base import Metric, MetricResult
+from .metrics import Faithfulness, Metric, MetricResult
 
 __version__ = "0.1.0"
 
@@ -32,6 +33,7 @@ __all__ = [
     "GERMAN",
     "Metric",
     "MetricResult",
+    "Faithfulness",
     "evaluate",
     "EvaluationResult",
 ]
