@@ -1,6 +1,6 @@
-# ragmål — language-aware RAG evaluation
+# ragas-lingua — language-aware RAG evaluation
 
-**Project plan · draft v1**
+**Project plan · v1 (shipped name: `ragas-lingua`, was working title "ragmål")**
 
 > A Nordic-first, drop-in evaluator that fixes what RAGAS gets wrong on non-English
 > text: hand-written, language-native judge prompts with Claude as the LLM-judge,
@@ -9,9 +9,52 @@
 - **For:** Cornelii Sandberg
 - **Stack:** Python · Claude API · uv
 - **Effort:** project (days–weeks)
-- **Blocker:** none — buildable today
+- **Repo:** https://github.com/CornElDos/ragas-lingua · MIT · CI green (py3.10 + 3.12)
 - **Rendered plan:** ./plan.html · https://claude.ai/code/artifact/25028594-0347-49e8-8d3b-d25894c31965
 - **RAGAS reference clone:** ~/Dokument/OpenSource/ragas-ref/
+
+---
+
+## 00 · Status (2026-07-08)
+
+The four core metrics ship for Swedish, plus two capabilities beyond the original plan.
+93 tests green, ruff clean, CI passing on py3.10 + 3.12.
+
+**Done**
+
+- **M0 · Scaffold** — repo, `Judge` protocol + `ClaudeJudge` + `FakeJudge`, RAGAS-compat
+  dataset IO (`from_ragas`, both v1/v2 key sets), hatchling packaging, GitHub Actions CI.
+- **M1 · faithfulness (sv)** — native Swedish prompts + language guardrail + Swedish gold
+  set + benchmark harness vs RAGAS (`bench/`).
+- **M2 · answer_correctness (sv)** — TP/FP/FN classification + semantic similarity, gold set.
+- **M3 · context_precision + answer_relevancy (sv)** — the two P2 metrics.
+- **Data-driven language packs** — each language is one self-contained
+  `prompts/<code>.toml`; `register_prompts_dir()` adds packs from outside the package.
+  Adding a language is dropping a file, not editing code.
+- **5 auto-generated packs** — `de`, `no`, `da`, `fi`, `is`, forward+back-translated,
+  flagged `reviewed = false` with a runtime warning; native review still wanted.
+- **`diagnose()`** — a labelled failure taxonomy (retrieval_gap / hallucination /
+  partial_retrieval vs partial_generation / …) over the metric combination; classifies,
+  never prescribes.
+- **Judge confidence** *(beyond plan)* — `score_with_confidence()` /
+  `evaluate_with_confidence()`: run a metric N times at temperature > 0 and report
+  `mean +/- spread` with a high/medium/low label. The differentiator no other LLM-judge
+  eval tool has.
+- **Scale: concurrency + caching** *(beyond plan)* — `max_concurrency=N` (thread pool over
+  the I/O-bound judge calls) and `CachingJudge` (memoise + optional JSON disk persistence;
+  auto-disabled above temperature 0 so it never collapses a confidence spread).
+- **8 runnable examples** + a smoke test that keeps them from rotting.
+- **Truncation guard** — the judge raises on a `max_tokens` cut-off instead of returning a
+  false 0.0 score; default `max_tokens` raised to 8192 (env-configurable).
+
+**Next up**
+
+- Gold sets + benchmark runner for the three newer metrics (only faithfulness +
+  answer_correctness have gold sets today); synthetic legal gold items.
+- Native review of the `de`/`no`/`da`/`fi`/`is` packs.
+- Blog post — "Varför RAG-eval är trasig på svenska, och en fix" (the brand payload).
+- Retries / rate-limit backoff for the judge; `to_pandas()` / audit-report export.
+- M5 stretch — multilingual testset generation.
 
 ---
 
@@ -84,13 +127,16 @@ A thin library around one call: `evaluate(dataset, metrics, judge=Claude, langua
 
 Effort in focused days (ideal, part-time-friendly). Each milestone ends in something demoable.
 
-| Milestone | Outcome | Effort |
+| Milestone | Outcome | Status |
 |---|---|---|
-| M0 · Scaffold | repo, `uv` setup, `Judge` protocol + ClaudeJudge, RAGAS-compat dataset IO, CI | 1–2d |
-| M1 · faithfulness (sv) | native Swedish prompts + language guardrail + **gold set** + benchmark vs RAGAS | 2–3d |
-| M2 · answer_correctness (sv) | statement classification, extends gold set & benchmark | 2d |
-| M3 · precision + relevancy | the other two P2 metrics, sv | 2d |
-| M4 · generalize + ship | add `no`/`da`/`fi` profiles, README, docs, **blog post**, RAGAS issue/PR link | 2–3d |
+| M0 · Scaffold | repo, `uv` setup, `Judge` protocol + ClaudeJudge, RAGAS-compat dataset IO, CI | ✅ done |
+| M1 · faithfulness (sv) | native Swedish prompts + language guardrail + **gold set** + benchmark vs RAGAS | ✅ done |
+| M2 · answer_correctness (sv) | statement classification, extends gold set & benchmark | ✅ done |
+| M3 · precision + relevancy | the other two P2 metrics, sv | ✅ done |
+| M4 · generalize + ship | `de`/`no`/`da`/`fi`/`is` packs (auto-gen), README, examples, docs | ◑ mostly — blog post + RAGAS issue/PR link pending |
+| — · diagnose | failure taxonomy over the metric combination | ✅ done (beyond plan) |
+| — · confidence | self-consistency `mean +/- spread` per score | ✅ done (beyond plan) |
+| — · scale | `max_concurrency` thread pool + `CachingJudge` | ✅ done (beyond plan) |
 | M5 · testset gen | later — multilingual generation (hard, optional stretch) | stretch |
 
 ## 06 · Validation — the Swedish proof
@@ -100,10 +146,10 @@ The benchmark *is* the credibility. Show, with numbers, that native prompts beat
 - Build a small **gold set** (~50–100 items) in Swedish: answer/context pairs with
   known-supported and known-hallucinated claims, plus a few `no`/`da` items. Sources:
   synthetic + public-domain (Wikipedia, public court rulings) — **never** Vasa client material.
-- Report three columns per metric: **ragmål** vs **RAGAS-default** vs **RAGAS-adapt(sv)**,
+- Report three columns per metric: **ragas-lingua** vs **RAGAS-default** vs **RAGAS-adapt(sv)**,
   scored against human labels — the LettuceDetect-style "F1 vs baseline" table.
-- Success bar: ragmål correlates with human judgment on Swedish and beats both RAGAS modes;
-  leakage guardrail catches cross-language extraction the others miss.
+- Success bar: ragas-lingua correlates with human judgment on Swedish and beats both RAGAS
+  modes; leakage guardrail catches cross-language extraction the others miss.
 
 > **Privacy — non-negotiable.** Vasa data almost certainly contains client and personal
 > data. Use it **only** for private sanity checks on your own machine; it must never be
@@ -124,23 +170,24 @@ The benchmark *is* the credibility. Show, with numbers, that native prompts beat
 
 - **repo** — Public MIT library; README leads with the problem + benchmark table, a
   10-line Swedish quickstart, and honest scope.
-- **benchmark** — reproducible `bench/` showing ragmål vs RAGAS on Swedish.
+- **benchmark** — reproducible `bench/` showing ragas-lingua vs RAGAS on Swedish.
 - **write-up** — a short blog post / LinkedIn piece (the brand payload): "Why RAG
   evaluation is broken in Swedish, and a fix."
 - **visibility** — one focused issue/PR to RAGAS referencing the lib.
 
-## 09 · Decisions needed
+## 09 · Decisions — resolved
 
-1. **Name** — proposed **ragmål** (`rag` + Swedish *mål* = "measure/target", and "court
-   case": a legal-tech wink). Alternatives: nordeval, lagom-eval.
-2. **Languages after Swedish** — recommend `sv → no → da → fi` (fi is a good distant
-   stress test but not your native → community-review).
-3. **Standalone only, or + RAGAS PR?** — recommend standalone first, then a small
-   companion issue/PR for reach.
-4. **Default judge model** — a current Claude model (Sonnet-class), pluggable.
-5. **License** — MIT (matches RAGAS, maximizes adoption) unless you want copyleft.
+1. **Name** — ✅ **`ragas-lingua`** (echoes RAGAS, signals the multilingual angle).
+2. **Languages after Swedish** — ✅ `sv` native; `de`/`no`/`da`/`fi`/`is` shipped
+   auto-generated and flagged "native review wanted".
+3. **Standalone or + RAGAS PR?** — ✅ standalone first (done). Companion RAGAS issue/PR
+   for reach still **pending**.
+4. **Default judge model** — ✅ Sonnet-class (`claude-sonnet-4-5`), pluggable + env-overridable.
+5. **License** — ✅ MIT.
+
+Still open: scope of the blog post; whether to publish to PyPI (currently install-from-source).
 
 ---
 
-*ragmål · project plan v1 · grounded in the current `vibrantlabsai/ragas` source.
-Next step on go: scaffold M0.*
+*ragas-lingua · project plan v1 · grounded in the current `vibrantlabsai/ragas` source.
+M0–M3 shipped; next: gold sets for the newer metrics, native pack review, blog post.*
